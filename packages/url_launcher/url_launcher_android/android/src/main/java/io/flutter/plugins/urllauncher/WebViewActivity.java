@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
@@ -58,8 +59,19 @@ public class WebViewActivity extends Activity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
           if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            view.loadUrl(url);
-            return false;
+            if (url.startsWith("mailto:")) {
+                 startActivity(new Intent(Intent.ACTION_SENDTO, Uri.parse(url)));
+
+                 return true;
+             } else if (url.startsWith("tel:")) {
+                 startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse(url)));
+
+                 return true;
+             } else {
+                 view.loadUrl(url);
+
+                 return false;
+             }
           }
           return super.shouldOverrideUrlLoading(view, url);
         }
@@ -68,7 +80,21 @@ public class WebViewActivity extends Activity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.loadUrl(request.getUrl().toString());
+             final Uri uri = request.getUrl();
+
+             if (uri.toString().startsWith("mailto:")) {
+                 startActivity(new Intent(Intent.ACTION_SENDTO, uri));
+
+                 return true;
+             } else if (uri.toString().startsWith("tel:")) {
+                 startActivity(new Intent(Intent.ACTION_DIAL, uri));
+
+                 return true;
+             } else {
+                 view.loadUrl(uri.toString());
+
+                 return false;
+             }
           }
           return false;
         }
